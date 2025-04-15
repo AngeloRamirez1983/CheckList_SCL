@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
+  <link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icono_cl.png">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,8 +32,11 @@
     <button onclick="setLanguage('es')">🇪🇸 Español</button>
   </div>
 
-  <h1 id="pageTitle"></h1>
-  <div class="date" id="currentDate"></div>
+  <div style="display: flex; align-items: center; margin-bottom: 10px;">
+  <img src="logo.png" alt="InterSystems Logo" style="height: 60px; margin-right: 15px;">
+  <h1 id="pageTitle" style="margin: 0;"></h1>
+</div>
+<div class="date" id="currentDate"></div>
 
   <div class="nav-buttons">
     <button onclick="showSection('piso3')">Piso 3</button>
