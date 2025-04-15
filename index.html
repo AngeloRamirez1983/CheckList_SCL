@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" href="apple-touch-icon.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,7 +32,7 @@
     <button onclick="setLanguage('es')">🇪🇸 Español</button>
   </div>
 
- <div style="text-align: center; margin-bottom: 15px;">
+  <div style="text-align: center; margin-bottom: 15px;">
     <img src="logo.png" alt="InterSystems Logo" style="height: 60px; display: block; margin: 0 auto 10px;">
     <h1 id="pageTitle" style="margin: 0;"></h1>
   </div>
@@ -223,128 +223,21 @@
       annex.appendChild(div);
     }
 
-  async function generatePDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  let y = 20;
-  const margin = 15;
-  const lineHeight = 8;
-
-  const logo = new Image();
-  logo.src = 'logo.png'; // asegúrate que esté en la raíz del repo
-
-  await new Promise((resolve) => {
-    logo.onload = resolve;
-  });
-
-  doc.addImage(logo, 'PNG', margin, y, 40, 15);
-  y += 20;
-
-  const title = lang === 'en' ? "Weekly Report – InterSystems Santiago Office" : "Informe Semanal – Oficina InterSystems Santiago";
-  const date = document.getElementById("currentDate").innerText;
-
-  doc.setFontSize(14);
-  doc.text(title, margin, y);
-  y += lineHeight;
-  doc.setFontSize(10);
-  doc.text(date, margin, y);
-  y += lineHeight + 5;
-
-  const t = translations[lang];
-
-  // Recorremos los pisos
-  t.pisos.forEach(piso => {
-    doc.setFontSize(12);
-    doc.text(`${lang === 'en' ? 'Floor' : 'Piso'} ${piso}`, margin, y);
-    y += lineHeight;
-
-    t.items.forEach((item, index) => {
-      const section = document.getElementById(`piso${piso}`);
-      const divs = section.querySelectorAll(".item");
-
-      const itemDiv = divs[index];
-      if (!itemDiv) return;
-
-      const status = itemDiv.querySelector("select").value || "-";
-      const comment = itemDiv.querySelector("textarea").value || "-";
-      const imgInput = itemDiv.querySelector("input[type='file']");
-      const imgElement = itemDiv.querySelector("img");
-
-      doc.setFontSize(10);
-      doc.text(`• ${item}`, margin, y);
-      y += lineHeight;
-      doc.text(`  ${t.status}: ${status}`, margin + 5, y);
-      y += lineHeight;
-      doc.text(`  ${t.comment}: ${comment}`, margin + 5, y);
-      y += lineHeight;
-
-      if (imgInput.files.length > 0 && imgElement.src) {
-        try {
-          const img = new Image();
-          img.src = imgElement.src;
-          await new Promise((resolve) => (img.onload = resolve));
-          doc.addImage(img, 'PNG', margin + 5, y, 40, 30);
-          y += 35;
-        } catch (e) {
-          y += lineHeight;
-        }
-      }
-
-      y += 5;
-      if (y > 270) {
-        doc.addPage();
-        y = 20;
-      }
-    });
-
-    y += 5;
-  });
-
-  // Anexos
-  doc.addPage();
-  y = 20;
-  doc.setFontSize(12);
-  doc.text(t.annexTitle, margin, y);
-  y += lineHeight;
-
-  const annexes = document.getElementById("annexContainer").querySelectorAll(".item");
-  for (const annex of annexes) {
-    const provider = annex.querySelector("input[type='text']").value || "-";
-    const obs = annex.querySelector("textarea").value || "-";
-    const fileInput = annex.querySelector("input[type='file']");
-
-    doc.setFontSize(10);
-    doc.text(`• ${t.provider}: ${provider}`, margin, y);
-    y += lineHeight;
-    doc.text(`${t.observations}: ${obs}`, margin + 5, y);
-    y += lineHeight;
-
-    if (fileInput.files.length > 0) {
-      const file = fileInput.files[0];
-      const reader = new FileReader();
-      await new Promise((resolve) => {
-        reader.onload = function (e) {
-          const img = new Image();
-          img.src = e.target.result;
-          img.onload = function () {
-            doc.addImage(img, 'PNG', margin + 5, y, 40, 30);
-            y += 35;
-            resolve();
-          };
-        };
-        reader.readAsDataURL(file);
+    async function generatePDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const content = document.body;
+      await html2canvas(content).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const imgProps = doc.getImageProperties(imgData);
+        const pdfWidth = doc.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        doc.save(`Reporte_Oficinas_CL_${new Date().toISOString().slice(0,10)}.pdf`);
       });
     }
 
-    y += 5;
-    if (y > 270) {
-      doc.addPage();
-      y = 20;
-    }
-  doc.save(`Weekly_Report_${new Date().toISOString().slice(0,10)}.pdf`);
-}
-setLanguage(lang);
+    setLanguage(lang);
     showSection('piso3');
   </script>
 </body>
